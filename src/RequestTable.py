@@ -12,3 +12,4 @@ class RequestTable:
         data = re.findall(r'const classificacao\s*=\s*(.*?);', content)
         table = json.loads(data[0])['classificacao']
         return table
+
