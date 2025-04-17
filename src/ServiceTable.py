@@ -1,6 +1,8 @@
 
 from flask import Flask, request
 from flask_cors import CORS
+
+from src.ModelPlay import ModelPlay
 from src.ModelTable import ModelTable
 from src.RequestTable import RequestTable
 
@@ -37,7 +39,43 @@ def const_table():
 
     return model
 
+def const_play():
+    play = RequestTable()
+    content = play.jogos("https://ge.globo.com/futebol/brasileirao-serie-a/")
+    model = []
+    for item in content:
+        aux = ModelPlay(
+            item["data_realizacao"],
+            item["equipes"]["mandante"]["escudo"],
+            item["equipes"]["mandante"]["nome_popular"],
+            item["equipes"]["visitante"]["escudo"],
+            item["equipes"]["visitante"]["nome_popular"],
+            item["hora_realizacao"],
+            item["jogo_ja_comecou"],
+            item["placar_oficial_mandante"],
+            item["placar_oficial_visitante"],
+            item["sede"]["nome_popular"]
+        )
+        model.append(aux)
+    return model
+
+def mensagem_erro():
+    return {
+        "mensagem": "Erro no dado",
+        "statusCode" : 400,
+        "descricao" : "Bad Request"
+    }
+
 @app.route('/api/v1/tabela/<posicao>')
 def table_position(posicao):
+    if int(posicao) < 0 or int(posicao) > 19:
+        return mensagem_erro()
     model = const_table()
     return model[int(posicao)].to_dict()
+
+@app.route('/api/v1/jogos/<partida>')
+def play_partida(partida):
+    if int(partida) < 0 or int(partida) > 9:
+        return mensagem_erro()
+    model = const_play()
+    return model[int(partida)].to_dict()

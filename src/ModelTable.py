@@ -25,6 +25,7 @@ gols_contra, gols_pro, jogos, nome_popular, ordem, pontos, saldo_gols, sigla, ul
 
     def to_dict(self):
         return {
+            'mensagem' : "Success operation",
             'aproveitamento': self.aproveitamento,
             'derrotas': self.derrotas,
             'empates': self.empates,
