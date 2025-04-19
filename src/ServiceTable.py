@@ -35,7 +35,7 @@ def const_table():
             item["variacao"],
             item["vitorias"]
         )
-        model.append(aux)
+        model.append(aux.to_dict())
 
     return model
 
@@ -56,7 +56,7 @@ def const_play():
             item["placar_oficial_visitante"],
             item["sede"]["nome_popular"]
         )
-        model.append(aux)
+        model.append(aux.to_dict())
     return model
 
 def mensagem_erro():
@@ -66,16 +66,26 @@ def mensagem_erro():
         "descricao" : "Bad Request"
     }
 
+@app.route('/api/v1/tabela')
+def table():
+    model = const_table()
+    return model
+
+@app.route('/api/v1/jogos')
+def play():
+    model = const_play()
+    return model
+
 @app.route('/api/v1/tabela/<posicao>')
 def table_position(posicao):
     if int(posicao) < 0 or int(posicao) > 19:
         return mensagem_erro()
     model = const_table()
-    return model[int(posicao)].to_dict()
+    return model[int(posicao)]
 
 @app.route('/api/v1/jogos/<partida>')
 def play_partida(partida):
     if int(partida) < 0 or int(partida) > 9:
         return mensagem_erro()
     model = const_play()
-    return model[int(partida)].to_dict()
+    return model[int(partida)]
