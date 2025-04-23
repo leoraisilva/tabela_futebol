@@ -142,6 +142,6 @@ class DataRepository:
              f'OR time_mandante=\'{visitante}\' '
              f'AND time_visitante=\'{mandante}\' '
         )
-        return database.execute(query)
+        return database.query(query)
 
 

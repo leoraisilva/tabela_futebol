@@ -87,17 +87,19 @@ def const_historic():
         derrota_fora = derrota - derrota_casa
         empate_fora = empate - empate_casa
         aux = ModelHistoric(
-
+            jogos, derrota, vitorias, empate, gol_contra, gol_favor, nome_popular,
+            vitoria_casa, empate_casa, derrota_casa, vitoria_fora, empate_fora, derrota_fora
         )
+        time.append(aux)
     return time
 
 @app.route('/api/v1/tabela')
 def table():
-    model = const_table()
+    model = const_historic()
     return_value = []
     for item in model:
         return_value = item.to_dict()
-    return model
+    return return_value
 
 @app.route('/api/v1/jogos')
 def play():
@@ -105,7 +107,7 @@ def play():
     return_value = []
     for item in model:
         return_value = item.to_dict()
-    return model
+    return return_value
 
 @app.route('/api/v1/tabela/<posicao>')
 def table_position(posicao):

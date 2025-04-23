@@ -15,3 +15,22 @@ class ModelHistoric:
         self.vitorias_fora = vitorias_fora
         self.empates_fora = empates_fora
         self.derrotas_fora = derrotas_fora
+
+    def to_dict(self):
+        return {
+            'mensagem': "Success operation",
+            "jogos" : self.jogos,
+            "derrotas" : self.derrotas,
+            "vitorias" : self.vitorias,
+            "empates" : self.empates,
+            "gols_contra" : self.gols_contra,
+            "gols_pro" : self.gols_pro,
+            "saldo_gols" : self.saldo_gols,
+            "nome_popular" : self.nome_popular,
+            "vitorias_casa" : self.vitorias_casa,
+            "empates_casa" : self.empates_casa,
+            "derrotas_casa" : self.derrotas_casa,
+            "vitorias_fora" : self.vitorias_fora,
+            "empates_fora" : self.empates_fora,
+            "derrotas_fora" : self.derrotas_fora
+        }
