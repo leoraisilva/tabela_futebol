@@ -131,7 +131,6 @@ class DataRepository:
         )
         return database.execute(query)
 
-
     def jogos_confronto(self, mandante, visitante):
         table = "torneio"
         database = Database()
