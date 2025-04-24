@@ -102,9 +102,9 @@ class DataRepository:
         table = "torneio"
         database = Database()
         query = (
-             f'SELECT COUNT(*) FROM {table}'
+             f'SELECT COUNT(*) FROM {table} '
              f'WHERE time_mandante=\'{mandante}\' '
-             f'AND time_visitante=\'{visitante}\''
+             f'AND time_visitante=\'{visitante}\' '
              f'AND gol_mandante > gol_visitante;'
         )
         return database.execute(query)
@@ -113,20 +113,20 @@ class DataRepository:
         table = "torneio"
         database = Database()
         query = (
-             f'SELECT COUNT(*) FROM {table}'
+             f'SELECT COUNT(*) FROM {table} '
              f'WHERE time_mandante=\'{mandante}\' '
-             f'AND time_visitante=\'{visitante}\''
+             f'AND time_visitante=\'{visitante}\' '
              f'AND gol_mandante < gol_visitante;'
         )
         return database.execute(query)
 
-    def empate_fora_confronto(self, mandante, visitante):
+    def empate_confronto(self, mandante, visitante):
         table = "torneio"
         database = Database()
         query = (
-             f'SELECT COUNT(*) FROM {table}'
+             f'SELECT COUNT(*) FROM {table} '
              f'WHERE time_mandante=\'{mandante}\' '
-             f'AND time_visitante=\'{visitante}\''
+             f'AND time_visitante=\'{visitante}\' '
              f'AND gol_mandante = gol_visitante;'
         )
         return database.execute(query)

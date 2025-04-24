@@ -63,18 +63,28 @@ class ServiceTable:
             "descricao" : "Bad Request"
         }
 
-    def const_historic(self):
+    def const_historic(self, mandante, visitante):
         database = DataRepository()
-        table = self.const_table()
         time = []
-        for item in table:
-            nome_popular = item.nome_popular
-            if nome_popular == "Atlético-MG":
+        dict = {mandante : 0, visitante: 0}
+
+        table = self.const_table()
+        for i in range(0, len(table) - 1):
+            if table[i].nome_popular == mandante:
+                dict[mandante] = i
+            elif table[i].nome_popular == visitante:
+                dict[visitante] = i
+
+        for a in dict:
+
+            if a == "Atlético-MG":
                 nome_popular = "atletico_mineiro"
-            elif nome_popular == "São Paulo":
+            elif a == "São Paulo":
                 nome_popular = "sao_paulo"
-            elif nome_popular == "Bragantino":
+            elif a == "Bragantino":
                 nome_popular = "redbull_bragantino"
+            else:
+                nome_popular = table[dict[a]].nome_popular
             jogos = database.total_jogos(nome_popular)
             vitorias = database.vitoria(nome_popular)
             derrotas = database.derrota(nome_popular)
@@ -88,11 +98,15 @@ class ServiceTable:
             derrotas_fora = derrotas - derrotas_casa
             empates_fora = empates - empates_casa
             ultimos_jogos = ''
-            for i in item.ultimos_jogos:
+            for i in table[dict[a]].ultimos_jogos:
                 ultimos_jogos += i
+            confronto_vitorias = database.vitoria_confronto(mandante, visitante)
+            confronto_derrotas = database.derrota_confronto(mandante, visitante)
+            confronto_empates = database.empate_confronto(mandante, visitante)
             aux = ModelHistoric(
                 jogos, derrotas, vitorias, empates, gols_contra, gols_favor, nome_popular,
-                vitorias_casa, empates_casa, derrotas_casa, vitorias_fora, empates_fora, derrotas_fora, ultimos_jogos
+                vitorias_casa, empates_casa, derrotas_casa, vitorias_fora, empates_fora,
+                derrotas_fora, ultimos_jogos, confronto_vitorias, confronto_derrotas, confronto_empates
             )
             time.append(aux)
         return time

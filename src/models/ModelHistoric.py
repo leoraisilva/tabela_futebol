@@ -1,6 +1,7 @@
 class ModelHistoric:
     def __init__(self,jogos, derrotas, vitorias, empates, gols_contra, gols_pro, nome_popular,
-                 vitorias_casa, empates_casa, derrotas_casa, vitorias_fora, empates_fora, derrotas_fora, ultimos_jogos):
+                 vitorias_casa, empates_casa, derrotas_casa, vitorias_fora, empates_fora, derrotas_fora,
+                 ultimos_jogos, confronto_vitorias, confronto_derrotas, confronto_empates):
         self.jogos = jogos
         self.derrotas = derrotas
         self.vitorias = vitorias
@@ -14,7 +15,11 @@ class ModelHistoric:
         self.vitorias_fora = vitorias_fora
         self.empates_fora = empates_fora
         self.derrotas_fora = derrotas_fora,
-        self.ultimos_jogos = ultimos_jogos
+        self.ultimos_jogos = ultimos_jogos,
+        self.confronto_vitorias = confronto_vitorias,
+        self.confronto_derrotas = confronto_derrotas,
+        self.confronto_empates = confronto_empates
+
 
     def to_dict(self):
         return {
@@ -32,7 +37,10 @@ class ModelHistoric:
             'vitorias_fora' : self.vitorias_fora,
             'empates_fora' : self.empates_fora,
             'derrotas_fora' : self.derrotas_fora,
-            'ultimos_jogos' : self.ultimos_jogos
+            'ultimos_jogos' : self.ultimos_jogos,
+            'confronto_vitorias' : self.confronto_vitorias,
+            'confronto_derrotas' : self.confronto_derrotas,
+            'confronto_empates' : self.confronto_empates
         }
 
     def win_rate(self):
@@ -65,3 +73,8 @@ class ModelHistoric:
     def media_gol_contra(self):
         return self.gols_contra/self.jogos
 
+    def saldo_gol(self):
+        return  self.gols_pro - self.gols_contra
+
+    def win_confronto(self):
+        return self.confronto_vitorias / (self.confronto_vitorias + self.confronto_derrotas + self.confronto_empates)

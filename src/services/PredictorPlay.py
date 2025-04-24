@@ -1,77 +1,51 @@
-import pandas as pd
-from src.services.ServiceTable import ServiceTable
+import warnings
 import pandas as pd
 import statsmodels.api as sm
-from statsmodels.formula.api import glm
-
+from statsmodels.genmod.families import NegativeBinomial, Poisson
+from statsmodels.tools.tools import add_constant
 
 class PredictorPlay:
-    service = ServiceTable()
+    def __init__(self, alpha=None, auto_dispersion=True):
+        self.alpha = alpha
+        self.auto_dispersion = auto_dispersion
+        self.model = None
+        self.is_negative_binomial = False
 
-    def dataFrame(self):
-        colunas = [
-            'nome_popular',
-            'jogos',
-            'vitorias',
-            'empates',
-            'derrotas',
-            'gols_pro',
-            'gols_contra',
-            'vitorias_casa',
-            'empates_casa',
-            'derrotas_casa',
-            'vitorias_fora',
-            'empates_fora',
-            'derrotas_fora',
-            'ultimas_partidas',
-            'vitorias_confronto',
-            'derrotas_confronto',
-            'empates_confronto'
-        ]
-        df = pd.DataFrame(columns=colunas)
-        dados = self.service.const_historic()
-        dados_times = []
-        for dado in dados:
-            aux = {
-                'nome_popular': dado.nome_popular,
-                'jogos': dado.jogos,
-                'vitorias': dado.vitorias,
-                'empates': dado.empates,
-                'derrotas': dado.derrotas,
-                'gols_pro': dado.gols_pro,
-                'gols_contra': dado.gols_contra,
-                'vitorias_casa': dado.vitorias_casa,
-                'empates_casa': dado.empates_casa,
-                'derrotas_casa': dado.derrotas_casa,
-                'vitorias_fora': dado.vitorias_fora,
-                'empates_fora': dado.empates_fora,
-                'derrotas_fora': dado.derrotas_fora,
-                'ultimas_partidas': dado.ultimos_jogos
+    def check_dispersion(self, y, X):
+        model_poisson = sm.GLM(y, X, family=Poisson()).fit(disp=0)
+        chi2 = sum(model_poisson.resid_pearson ** 2)
+        dispersion = chi2 / model_poisson.df_resid
+        return dispersion > 1.25
+
+    def fit(self, X, y):
+        X = add_constant(X.copy())
+        self.feature_names = X.columns.tolist()
+
+        if self.auto_dispersion and self.check_dispersion(y, X):
+            family = NegativeBinomial(alpha=self.alpha) if self.alpha else NegativeBinomial()
+            self.is_negative_binomial = True
+        else:
+            family = Poisson()
+            self.is_negative_binomial = False
+
+        self.model = sm.GLM(y, X, family=family).fit()
+        return self
+
+    def predict(self, X):
+        if not self.model:
+            raise ValueError("Modelo não treinado. Chame .fit() primeiro.")
+        X = add_constant(X.copy(), has_constant='add')
+        return self.model.predict(X)
+
+    def summary(self):
+        """Retorna o resumo do modelo."""
+        return self.model.summary() if self.model else "Modelo não treinado."
+
+    def get_params(self):
+        """Retorna os coeficientes do modelo."""
+        if self.model:
+            return {
+                'params': self.model.params.to_dict(),
+                'dispersion': self.alpha if self.is_negative_binomial else None
             }
-            dados_times.append(aux)
-        df = pd.DataFrame(dados_times)
-        df['derrotas_fora'] = df['derrotas_fora'].apply(
-            lambda x: x[0] if isinstance(x, tuple) else x
-        )
-
-        df['saldo_gols'] = df['gols_pro'] - df['gols_contra']
-        df['aproveitamento'] = (df['vitorias'] * 3 + df['empates']) / (df['jogos'] * 3)
-        df['aproveitamento_casa'] = (df['vitorias_casa'] * 3 + df['empates_casa']) / (
-                    (df['vitorias_casa'] + df['empates_casa'] + df['derrotas_casa']) * 3)
-        df['aproveitamento_fora'] = (df['vitorias_fora'] * 3 + df['empates_fora']) / (
-                    (df['vitorias_fora'] + df['empates_fora'] + df['derrotas_fora']) * 3)
-
-        # Processando a coluna 'ultimas_partidas' para extrair features
-        def calcular_ultimos_resultados(sequencia):
-            v = sequencia.count('v')
-            e = sequencia.count('e')
-            d = sequencia.count('d')
-            return pd.Series([v, e, d], index=['ultimas_v', 'ultimas_e', 'ultimas_d'])
-
-        df[['ultimas_v', 'ultimas_e', 'ultimas_d']] = df['ultimas_partidas'].apply(calcular_ultimos_resultados)
-
-        df['gols_pro'] = pd.to_numeric(df['gols_pro'], errors='coerce')
-        df['gols_contra'] = pd.to_numeric(df['gols_contra'], errors='coerce')
-        df['saldo_gols'] = pd.to_numeric(df['saldo_gols'], errors='coerce')
-
-        return df
+        return None
