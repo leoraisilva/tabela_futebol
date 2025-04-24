@@ -67,9 +67,9 @@ class ServiceTable:
         database = DataRepository()
         table = self.const_table()
         time = []
-        for item in  table:
+        for item in table:
             nome_popular = item.nome_popular
-            if nome_popular == "Atlé    tico-MG":
+            if nome_popular == "Atlético-MG":
                 nome_popular = "atletico_mineiro"
             elif nome_popular == "São Paulo":
                 nome_popular = "sao_paulo"
@@ -87,10 +87,9 @@ class ServiceTable:
             vitorias_fora = vitorias - vitorias_casa
             derrotas_fora = derrotas - derrotas_casa
             empates_fora = empates - empates_casa
-            ultimos_jogos = 0
+            ultimos_jogos = ''
             for i in item.ultimos_jogos:
-                if i == 'v':
-                    ultimos_jogos += 1
+                ultimos_jogos += i
             aux = ModelHistoric(
                 jogos, derrotas, vitorias, empates, gols_contra, gols_favor, nome_popular,
                 vitorias_casa, empates_casa, derrotas_casa, vitorias_fora, empates_fora, derrotas_fora, ultimos_jogos
