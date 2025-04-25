@@ -1,10 +1,8 @@
-from src.services.ServiceTable import ServiceTable
 import pandas as pd
 
 class DataFrameTable:
-    service = ServiceTable()
 
-    def dataFrame(self, mandante, visitante):
+    def dataFrame(self, dados):
         colunas = [
             'nome_popular',
             'jogos',
@@ -20,12 +18,8 @@ class DataFrameTable:
             'empates_fora',
             'derrotas_fora',
             'ultimas_partidas',
-            'vitorias_confronto',
-            'derrotas_confronto',
-            'empates_confronto'
         ]
         df = pd.DataFrame(columns=colunas)
-        dados = self.service.const_historic(mandante, visitante)
         dados_times = []
         for dado in dados:
             aux = {
@@ -42,20 +36,11 @@ class DataFrameTable:
                 'vitorias_fora': dado.vitorias_fora,
                 'empates_fora': dado.empates_fora,
                 'derrotas_fora': dado.derrotas_fora,
-                'ultimas_partidas': dado.ultimos_jogos,
-                'vitorias-confronto' : dado.confronto_vitorias,
-                'derrotas-confronto' : dado.confronto_derrotas,
-                'empates-confronto' : dado.confronto_empates
+                'ultimas_partidas': dado.ultimos_jogos
             }
             dados_times.append(aux)
         df = pd.DataFrame(dados_times)
-        df['vitorias-confronto'] = df['vitorias-confronto'].apply(
-            lambda x: x[0] if isinstance(x, tuple) else x
-        )
         df['derrotas_fora'] = df['derrotas_fora'].apply(
-            lambda x: x[0] if isinstance(x, tuple) else x
-        )
-        df['derrotas-confronto'] = df['derrotas-confronto'].apply(
             lambda x: x[0] if isinstance(x, tuple) else x
         )
         df['ultimas_partidas'] = df['ultimas_partidas'].apply(

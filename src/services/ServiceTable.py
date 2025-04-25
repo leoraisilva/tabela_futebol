@@ -1,10 +1,15 @@
-from statistics import linear_regression
-
+from sklearn.model_selection import train_test_split
 from src.models.ModelPlay import ModelPlay
 from src.models.ModelTable import ModelTable
 from src.models.ModelHistoric import ModelHistoric
+
 from src.repositories.DataRepository import DataRepository
 from src.repositories.RequestTable import RequestTable
+
+from src.services.DataFrameTable import DataFrameTable
+from src.services.MatchPredictor import MatchPredictor
+from src.services.PredictorPlay import PredictorPlay
+
 
 class ServiceTable:
 
@@ -63,53 +68,85 @@ class ServiceTable:
             "descricao" : "Bad Request"
         }
 
-    def const_historic(self, mandante, visitante):
+    def const_historic(self):
         database = DataRepository()
         time = []
-        dict = {mandante : 0, visitante: 0}
 
         table = self.const_table()
-        for i in range(0, len(table) - 1):
-            if table[i].nome_popular == mandante:
-                dict[mandante] = i
-            elif table[i].nome_popular == visitante:
-                dict[visitante] = i
+        competicao = ['brasileirao23', 'brasileirao24']
 
-        for a in dict:
-
-            if a == "Atlético-MG":
+        for item in table:
+            if item.nome_popular == "Atlético-MG":
                 nome_popular = "atletico_mineiro"
-            elif a == "São Paulo":
+            elif item.nome_popular == "São Paulo":
                 nome_popular = "sao_paulo"
-            elif a == "Bragantino":
+            elif item.nome_popular == "Bragantino":
                 nome_popular = "redbull_bragantino"
             else:
-                nome_popular = table[dict[a]].nome_popular
-            jogos = database.total_jogos(nome_popular)
-            vitorias = database.vitoria(nome_popular)
-            derrotas = database.derrota(nome_popular)
-            empates = database.empate(nome_popular)
-            gols_favor = database.gol_favor(nome_popular)
-            gols_contra = database.gol_contra(nome_popular)
-            vitorias_casa = database.vitoria_casa(nome_popular)
-            derrotas_casa = database.derrota_casa(nome_popular)
-            empates_casa = database.empate_casa(nome_popular)
-            vitorias_fora = vitorias - vitorias_casa
-            derrotas_fora = derrotas - derrotas_casa
-            empates_fora = empates - empates_casa
-            ultimos_jogos = ''
-            for i in table[dict[a]].ultimos_jogos:
-                ultimos_jogos += i
-            confronto_vitorias = database.vitoria_confronto(mandante, visitante)
-            confronto_derrotas = database.derrota_confronto(mandante, visitante)
-            confronto_empates = database.empate_confronto(mandante, visitante)
-            aux = ModelHistoric(
-                jogos, derrotas, vitorias, empates, gols_contra, gols_favor, nome_popular,
-                vitorias_casa, empates_casa, derrotas_casa, vitorias_fora, empates_fora,
-                derrotas_fora, ultimos_jogos, confronto_vitorias, confronto_derrotas, confronto_empates
-            )
-            time.append(aux)
+                nome_popular = item.nome_popular
+            for comp in competicao:
+                jogos = database.total_jogos(nome_popular, comp)
+                if jogos != 0:
+                    vitorias = database.vitoria(nome_popular, comp)
+                    derrotas = database.derrota(nome_popular, comp)
+                    empates = database.empate(nome_popular, comp)
+                    gols_favor = database.gol_favor(nome_popular, comp)
+                    gols_contra = database.gol_contra(nome_popular, comp)
+                    vitorias_casa = database.vitoria_casa(nome_popular, comp)
+                    derrotas_casa = database.derrota_casa(nome_popular, comp)
+                    empates_casa = database.empate_casa(nome_popular, comp)
+                    vitorias_fora = vitorias - vitorias_casa
+                    derrotas_fora = derrotas - derrotas_casa
+                    empates_fora = empates - empates_casa
+                    ultimos_jogos = ''
+                    for i in item.ultimos_jogos:
+                        ultimos_jogos += i
+                    aux = ModelHistoric(
+                        jogos, derrotas, vitorias, empates, gols_contra, gols_favor, nome_popular,
+                        vitorias_casa, empates_casa, derrotas_casa, vitorias_fora, empates_fora,
+                        derrotas_fora, ultimos_jogos
+                    )
+                    time.append(aux)
         return time
 
+    def probability(self, mandante, visitante):
+        dtf = DataFrameTable()
+        dados_hist = self.const_historic()
+        df = dtf.dataFrame(dados_hist)
 
+        X = df[['vitorias', 'empates', 'derrotas', 'gols_contra']]
+        y = df['gols_pro']
+
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+        predictor = PredictorPlay(auto_dispersion=True, verbose=True)
+        predictor.fit(X_train, y_train)
+
+        match_predictor = MatchPredictor(predictor)
+
+        dados_time = self.const_table()
+        for item in dados_time:
+            if mandante == item.nome_popular:
+                time_casa = {
+                    'vitorias': item.vitorias,
+                    'empates': item.empates,
+                    'derrotas': item.derrotas,
+                    'gols_contra': item.gols_contra
+                }
+            elif visitante == item.nome_popular:
+                time_fora = {
+                    'vitorias': item.vitorias,
+                    'empates': item.empates,
+                    'derrotas': item.derrotas,
+                    'gols_contra': item.gols_contra
+                }
+        prediction = match_predictor.predict_match(time_casa, time_fora)
+
+        probabilidade = {
+                'vitoria': f"{(prediction['probabilities']['win'] * 100):.2f}",
+                'empate': f"{(prediction['probabilities']['draw'] * 100):.2f}",
+                'derrota': f"{(prediction['probabilities']['lose'] * 100):.2f}"
+            }
+
+        return probabilidade
 

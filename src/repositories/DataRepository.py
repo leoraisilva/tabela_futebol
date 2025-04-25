@@ -5,96 +5,121 @@ from src.Database.Database import Database
 
 class DataRepository:
 
-    def total_jogos(self, time):
+    def total_jogos(self, time, competicao):
         table = "torneio"
         database = Database()
         query = (
             f'SELECT COUNT(*) FROM {table}'
-            f' WHERE time_mandante=\'{time}\' OR time_visitante=\'{time}\'; '
+            f' WHERE time_mandante=\'{time}\''
+            f' AND competicao=\'{competicao}\''
+            f' OR time_visitante=\'{time}\''
+            f' AND competicao=\'{competicao}\' ; '
         )
         return database.execute(query)
 
-    def vitoria(self, time):
+    def vitoria(self, time, competicao):
         table = "torneio"
         database = Database()
         query = (
             f'SELECT COUNT(*) FROM {table}'
-            f' WHERE time_mandante=\'{time}\' AND gol_mandante > gol_visitante  '
-            f' OR time_visitante=\'{time}\' AND gol_mandante < gol_visitante '
+            f' WHERE time_mandante=\'{time}\''
+            f' AND gol_mandante > gol_visitante '
+            f' AND competicao=\'{competicao}\''
+            f' OR time_visitante=\'{time}\''
+            f' AND gol_mandante < gol_visitante '
+            f' AND competicao=\'{competicao}\';'
         )
         return database.execute(query)
 
-    def derrota(self, time):
+    def derrota(self, time, competicao):
         table = "torneio"
         database = Database()
         query = (
             f'SELECT COUNT(*) FROM {table}'
-            f' WHERE time_mandante=\'{time}\' AND gol_mandante < gol_visitante '
-            f' OR time_visitante=\'{time}\' AND gol_mandante > gol_visitante '
+            f' WHERE time_mandante=\'{time}\''
+            f' AND gol_mandante < gol_visitante '
+            f' AND competicao=\'{competicao}\''
+            f' OR time_visitante=\'{time}\''
+            f' AND gol_mandante > gol_visitante '
+            f' AND competicao=\'{competicao}\';'
         )
         return database.execute(query)
 
-    def empate(self, time):
+    def empate(self, time, competicao):
         table = "torneio"
         database = Database()
         query = (
             f'SELECT COUNT(*) FROM {table}'
-            f' WHERE time_mandante=\'{time}\' AND gol_mandante = gol_visitante '
-            f' OR time_visitante=\'{time}\' AND gol_mandante = gol_visitante '
+            f' WHERE time_mandante=\'{time}\''
+            f' AND gol_mandante = gol_visitante '
+            f' AND competicao=\'{competicao}\''
+            f' OR time_visitante=\'{time}\''
+            f' AND gol_mandante = gol_visitante '
+            f' AND competicao=\'{competicao}\';'
         )
         return database.execute(query)
 
-    def gol_favor(self, time):
+    def gol_favor(self, time, competicao):
         table = "torneio"
         database = Database()
         query = (
             f'SELECT ('
             f'SELECT sum(gol_mandante) FROM {table} '
-            f'WHERE time_mandante=\'{time}\' ) +'
+            f'WHERE time_mandante=\'{time}\' '
+            f' AND competicao=\'{competicao}\') +'
             f'(SELECT sum(gol_visitante) FROM {table} '
-            f'WHERE time_visitante=\'{time}\') AS gol_favor;'
+            f'WHERE time_visitante=\'{time}\''
+            f' AND competicao=\'{competicao}\''
+            f') AS gol_favor '
+
         )
         return database.execute(query)
 
-    def gol_contra(self, time):
+    def gol_contra(self, time, competicao):
         table = "torneio"
         database = Database()
         query = (
             f'SELECT ('
             f'SELECT sum(gol_visitante) FROM {table} '
-            f'WHERE time_mandante=\'{time}\' ) +'
+            f'WHERE time_mandante=\'{time}\' '
+            f' AND competicao=\'{competicao}\') +'
             f'(SELECT sum(gol_mandante) FROM {table} '
-            f'WHERE time_visitante=\'{time}\') AS gol_favor;'
+            f'WHERE time_visitante=\'{time}\''
+            f' AND competicao=\'{competicao}\') AS gol_favor ;'
+
         )
         return database.execute(query)
 
-    def vitoria_casa(self, time):
+    def vitoria_casa(self, time, competicao):
         table = "torneio"
         database = Database()
         query = (
              f'SELECT COUNT(*) FROM {table}'
              f' WHERE time_mandante=\'{time}\' '
-             f'AND gol_mandante > gol_visitante;'
+             f'AND gol_mandante > gol_visitante; '
+             f' AND competicao=\'{competicao}\';'
         )
         return database.execute(query)
 
-    def derrota_casa(self, time):
+    def derrota_casa(self, time, competicao):
         table = "torneio"
         database = Database()
         query = (
              f'SELECT COUNT(*) FROM {table}'
              f' WHERE time_mandante=\'{time}\' '
-             f'AND gol_mandante < gol_visitante;'
+             f'AND gol_mandante < gol_visitante '
+             f' AND competicao=\'{competicao}\';'
         )
         return database.execute(query)
 
-    def empate_casa(self, time):
+    def empate_casa(self, time, competicao):
         table = "torneio"
         database = Database()
         query = (
              f'SELECT COUNT(*) FROM {table}'
              f' WHERE time_mandante=\'{time}\' '
-             f'AND gol_mandante = gol_visitante;'
+             f'AND gol_mandante = gol_visitante '
+             f' AND competicao=\'{competicao}\';'
         )
         return database.execute(query)
 

@@ -1,3 +1,4 @@
+
 from flask import Flask, request
 from flask_cors import CORS
 
@@ -10,13 +11,11 @@ CORS(app, resources={r"/api/v1/*": {"origins": "*"}})
 def const():
     return ServiceTable()
 
-# @app.route('/api/v1/historic')
-# def historic():
-#     model = const().const_historic()
-#     return_value = []
-#     for item in model:
-#         return_value.append(item.to_dict())
-#     return return_value
+@app.route('/api/v1/probabilidade/<mandante>/<visitante>')
+def probabilidade(mandante, visitante):
+    model = const().probability(mandante, visitante)
+    return model
+
 
 @app.route('/api/v1/tabela')
 def table():
