@@ -1,5 +1,3 @@
-from fontTools.ttLib.ttVisitor import visit
-
 from src.Database.Database import Database
 
 
